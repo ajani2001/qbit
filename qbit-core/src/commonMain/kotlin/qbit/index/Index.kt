@@ -17,7 +17,7 @@ fun Index(entities: List<RawEntity>): Index =
 
 fun eidPattern(eid: Gid) = { other: Eav -> other.gid.compareTo(eid) }
 
-fun attrPattern(attr: String) = { fact: Eav -> fact.attr.compareTo(attr) }
+fun attrPattern(attr: String) = { fact: Eav -> fact.attr.name.compareTo(attr) }
 
 fun valuePattern(value: Any) = { fact: Eav -> compareValues(fact.value, value) }
 
@@ -32,7 +32,7 @@ internal fun composeComparable(vararg cmps: (Eav) -> Int) = { fact: Eav ->
 
 internal val aveCmp = Comparator<Eav> { o1, o2 ->
 
-    var res = o1.attr.compareTo(o2.attr)
+    var res = o1.attr.name.compareTo(o2.attr.name)
     if (res == 0) {
         res = compareValues(o1.value, o2.value)
     }
@@ -57,7 +57,7 @@ class Index(
 
     init {
         assert("ave-ndex should not contain tombstones") {
-            aveIndex.none { it.attr == tombstone.name }
+            aveIndex.none { it.attr == tombstone }
         }
     }
 
@@ -81,7 +81,7 @@ class Index(
         for (e in entities) {
             val (gid, eavs) = e
 
-            val isUpdate = eavs[0].attr != tombstone.name
+            val isUpdate = eavs[0].attr != tombstone
             val obsoleteEntity =
                 if (isUpdate) {
                     newEntities.put(gid, e)
@@ -92,7 +92,7 @@ class Index(
             if (obsoleteEntity != null) {
                 obsoleteEavs.addAll(obsoleteEntity.second)
             }
-            newEavs.addAll(eavs.filter { it.value is Comparable<*> && it.attr != tombstone.name })
+            newEavs.addAll(eavs.filter { it.value is Comparable<*> && it.attr != tombstone })
         }
 
         obsoleteEavs.sortWith(aveCmp)
@@ -109,17 +109,17 @@ class Index(
 
     fun entityById(eid: Gid): Map<String, List<Any>>? =
         entities[eid]?.second
-            ?.groupBy { it.attr }
+            ?.groupBy { it.attr.name }
             ?.mapValues {
                 it.value.map { f -> f.value }
             }
 
     fun eidsByPred(pred: QueryPred): Sequence<Gid> {
         val fromIdx = aveIndex.firstMatchIdx {
-            if (it.attr == pred.attrName) {
+            if (it.attr.name == pred.attrName) {
                 pred.compareTo(it.value)
             } else {
-                it.attr.compareTo(pred.attrName)
+                it.attr.name.compareTo(pred.attrName)
             }
         }
         if (fromIdx < 0 || fromIdx == aveIndex.size) {
@@ -127,7 +127,7 @@ class Index(
         }
         return aveIndex.subList(fromIdx)
             .asSequence()
-            .takeWhile { it.attr == pred.attrName && pred.compareTo(it.value) == 0 }
+            .takeWhile { it.attr.name == pred.attrName && pred.compareTo(it.value) == 0 }
             .map { it.gid }
     }
 

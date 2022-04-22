@@ -8,7 +8,7 @@ import qbit.index.InternalDb
 
 fun validate(db: InternalDb, facts: List<Eav>, newAttrs: List<Attr<*>> = emptyList()) {
     val newAttrsByName = newAttrs.associateBy { it.name }
-    val factAttrs = facts.map { it.attr to (db.attr(it.attr) ?: newAttrsByName[it.attr]) }.toMap()
+    val factAttrs = facts.map { it.attr to (db.attr(it.attr.name) ?: newAttrsByName[it.attr.name]) }.toMap() //TODO VALIDATE :)
 
     // check for unknown attributes
     val unknownAttrNames = factAttrs

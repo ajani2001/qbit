@@ -27,7 +27,7 @@ suspend fun logsDiff(
 
 private fun writtenEntityAttrs(nodes: List<NodeVal<Hash>>) =
     nodes.flatMap { n -> n.data.trxes.map { PersistedEav(it, n.timestamp, n.hash) } }
-        .groupBy { GidAttr(it.eav.gid, it.eav.attr) }
+        .groupBy { GidAttr(it.eav.gid, it.eav.attr.name) }
 
 data class LogsDiff(
     val writesFromA: Map<GidAttr, List<PersistedEav>>,
@@ -61,7 +61,7 @@ internal fun lastWriterWinsResolve(resolveAttrName: (String) -> Attr<Any>?): (Li
     require(eavsFromA.isNotEmpty()) { "eavsFromA should be not empty" }
     require(eavsFromB.isNotEmpty()) { "eavsFromB should be not empty" }
 
-    val attr = resolveAttrName(eavsFromA[0].eav.attr)
+    val attr = resolveAttrName(eavsFromA[0].eav.attr.name) // TODO REASONING
         ?: throw IllegalArgumentException("Cannot resolve ${eavsFromA[0].eav.attr}")
 
     when {

@@ -42,7 +42,7 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
         assertEquals(1, factoring.size, "Factoring of single entity should produce facts for one entity")
         val facts = factoring.entityFacts.values.first()
         assertEquals(1, facts.size, "Factoring of single entity with single attr should produce single fact")
-        assertEquals("TheSimplestEntity/scalar", facts[0].attr)
+        assertEquals("TheSimplestEntity/scalar", facts[0].attr.name)
         assertEquals("addrValue", facts[0].value)
     }
 
@@ -60,7 +60,7 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
         val facts = factoring.entityFacts.values.first()
         assertEquals(1, facts.size, "Factoring of single entity with single attr should produce single fact")
         assertEquals(Gid(1), facts[0].gid)
-        assertEquals("TheSimplestEntity/scalar", facts[0].attr)
+        assertEquals("TheSimplestEntity/scalar", facts[0].attr.name)
         assertEquals("addrValue", facts[0].value)
     }
 
@@ -103,11 +103,11 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
 
         assertEquals(2, factoring.size, "Factoring of two entities with single attr should produce two facts")
 
-        assertEquals("EntityWithRef/ref", root[0].attr)
+        assertEquals("EntityWithRef/ref", root[0].attr.name)
 
         assertEquals(root[0].value, referredEntity[0].gid)
 
-        assertEquals("TheSimplestEntity/scalar", referredEntity[0].attr)
+        assertEquals("TheSimplestEntity/scalar", referredEntity[0].attr.name)
         assertEquals("addrValue", referredEntity[0].value)
     }
 
@@ -146,7 +146,7 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
         assertEquals(2, entityEavs[2].value)
 
         // And eavs has correct attr
-        assertEquals("EntityWithScalarList/scalars", entityEavs[0].attr)
+        assertEquals("EntityWithScalarList/scalars", entityEavs[0].attr.name)
     }
 
     @JsName("Test_entity_with_refs_list_factoring")
@@ -173,8 +173,8 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
         assertEquals("1", secondReferredEavs[0].value)
 
         // And eavs has correct attr
-        assertEquals("EntityWithRefList/refs", rootEavs[0].attr)
-        assertEquals("TheSimplestEntity/scalar", firstReferredEavs[0].attr)
+        assertEquals("EntityWithRefList/refs", rootEavs[0].attr.name)
+        assertEquals("TheSimplestEntity/scalar", firstReferredEavs[0].attr.name)
     }
 
 
@@ -218,7 +218,7 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
         // And the entity has single eav
         val theEntityFacts = factoring.entityFacts[theEntity]!!
         assertTrue(theEntityFacts.size == 1, "Expected single fact but got $theEntityFacts")
-        assertEquals("TheSimplestEntity/scalar", theEntityFacts[0].attr)
+        assertEquals("TheSimplestEntity/scalar", theEntityFacts[0].attr.name)
         assertEquals("theEntity", theEntityFacts[0].value)
     }
 
@@ -260,7 +260,7 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
         )
 
         val theScientistNameEavs = factoring.distinct()
-            .filter { it.gid == theScientistGid && it.attr == "Scientist/name" }
+            .filter { it.gid == theScientistGid && it.attr.name == "Scientist/name" }
 
         assertEquals(
             1,
@@ -280,7 +280,7 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
 
         // Than its factorzation contains single eav for placeholder
         assertEquals(1, facts.size, "Only fact for placeholder should be generated")
-        assertEquals("NullableScalar/placeholder", facts.first().attr)
+        assertEquals("NullableScalar/placeholder", facts.first().attr.name)
         assertEquals(0L, facts.first().value)
     }
 
@@ -310,7 +310,7 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
 
         // Then it contains eav for primitive value with correct attribute
         assertTrue(
-            factoring.any { it.attr == "NullableIntEntity/int" && it.value == 2 },
+            factoring.any { it.attr.name == "NullableIntEntity/int" && it.value == 2 },
             "Cannot find expected eav for NullableIntEntity.int in ${factoring.toList()}"
         )
     }
@@ -326,7 +326,7 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
 
         // Then it's factoring contains eav with byte array
         val eav = factoring.toList()[0]
-        assertEquals("ByteArrayEntity/byteArray", eav.attr)
+        assertEquals("ByteArrayEntity/byteArray", eav.attr.name)
         assertArrayEquals(byteArrayOf(1, 2, 3), eav.value as ByteArray)
     }
 
@@ -344,7 +344,7 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
 
         // Then it's factoring contains eav with byte array
         val eav = factoring.toList()[0]
-        assertEquals("ListOfByteArraysEntity/byteArrays", eav.attr)
+        assertEquals("ListOfByteArraysEntity/byteArrays", eav.attr.name)
         assertArrayEquals(firstByteArray, eav.value as ByteArray)
         assertArrayEquals(secondByteArray, factoring.toList()[1].value as ByteArray)
         assertArrayEquals(thirdByteArray, factoring.toList()[2].value as ByteArray)
@@ -398,7 +398,7 @@ abstract class CommonFactoringTest(val factor: Factor, val attrsMap: Map<String,
 
         // Then it's factoring contains single placeholder eav
         assertEquals(1, factoring.size)
-        assertEquals(Eav(Gid(0, 1), "qbit.api/tombstone", true), factoring.first())
+        assertEquals(Eav(Gid(0, 1), testSchema("qbit.api/tombstone")!!, true), factoring.first())
     }
 
     @JsName("Test_check_for_factoring_of_different_states_for_the_same_entity")

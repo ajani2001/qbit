@@ -107,7 +107,7 @@ class MappingTest {
         val db = createTestDb()
         val facts = factor(s, db::attr, gids)
         assertEquals(6, facts.size)
-        assertEquals(Gid(0, 7), facts.first { it.attr == Scientists.reviewer.name }.value)
+        assertEquals(Gid(0, 7), facts.first { it.attr == Scientists.reviewer }.value)
     }
 
     @JsName("Test_bomb_schema_generation")

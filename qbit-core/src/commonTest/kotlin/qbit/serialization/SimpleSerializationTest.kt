@@ -1,16 +1,13 @@
 package qbit.serialization
 
 import io.ktor.utils.io.core.*
+import qbit.*
 import qbit.api.gid.Gid
 import qbit.api.gid.Iid
 import qbit.api.model.*
 import qbit.api.system.DbUuid
-import qbit.assertArrayEquals
 import qbit.platform.asInput
 import qbit.platform.currentTimeMillis
-import qbit.random
-import qbit.randomBytes
-import qbit.randomString
 import kotlin.test.*
 
 
@@ -123,7 +120,7 @@ class SimpleSerializationTest {
     @Test
     fun testRoot() {
         val iid = Iid(1, 4)
-        val root = Root(null, DbUuid(iid), currentTimeMillis(), NodeData(arrayOf(Eav(Gid(iid, 1), "test", 0))))
+        val root = Root(null, DbUuid(iid), currentTimeMillis(), NodeData(arrayOf(Eav(Gid(iid, 1), Attr<Int>("test"), 0))))
         val serializeNode = SimpleSerialization.serializeNode(root)
         val res = SimpleSerialization.deserializeNode(serializeNode.asInput())
         assertEquals(root.hash, res.hash)
@@ -145,7 +142,7 @@ class SimpleSerializationTest {
                         random
                     )
                 )
-            ), DbUuid(iid), currentTimeMillis(), NodeData(arrayOf(Eav(Gid(iid, 1), "test", 0)))
+            ), DbUuid(iid), currentTimeMillis(), NodeData(arrayOf(Eav(Gid(iid, 1), Attr<Int>("test"), 0)))
         )
         val res = SimpleSerialization.deserializeNode(SimpleSerialization.serializeNode(root).asInput()) as Leaf
         assertEquals(root.hash, res.hash)
@@ -167,7 +164,7 @@ class SimpleSerializationTest {
             NodeRef(Hash(randomBytes(HASH_LEN, random))),
             DbUuid(iid),
             currentTimeMillis(),
-            NodeData(arrayOf(Eav(Gid(iid, 1), "test", 0)))
+            NodeData(arrayOf(Eav(Gid(iid, 1), Attr<Int>("test"), 0)))
         )
         val res = SimpleSerialization.deserializeNode(SimpleSerialization.serializeNode(root).asInput()) as Merge
         assertEquals(root.parent1.hash, res.parent1.hash)

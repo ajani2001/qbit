@@ -1,8 +1,10 @@
 package qbit.resolving
 
 import io.ktor.utils.io.core.*
+import qbit.Attr
 import qbit.api.gid.Gid
 import qbit.api.gid.Iid
+import qbit.api.model.Attr
 import qbit.api.model.Eav
 import qbit.api.model.HASH_LEN
 import qbit.api.model.Hash
@@ -96,18 +98,18 @@ fun createLogsForResolveTest(): Pair<List<TrxLog>, List<Eav>>{
     val root = Root(Hash(ByteArray(1) { 1.toByte() }), testDbUuid, 10L, NodeData(Array(3) { i ->
         Eav(
             Gid(i.toLong()),
-            i.toString(),
+            Attr<Int>(i.toString()),
             i
         )
     }))
     nodesDepth[root.hash] = getNodeDepthByDepthMap(root, nodesDepth)
-    val eavA1 = Eav(Gid(2.toLong()), 2.toString(), 2)
+    val eavA1 = Eav(Gid(2.toLong()), Attr<Int>(2.toString()), 2)
     val nodeA1 = Leaf(Hash(ByteArray(1) { 2.toByte() }), root, testDbUuid, 13L, NodeData(Array(1) {eavA1}))
     nodesDepth[nodeA1.hash] = getNodeDepthByDepthMap(nodeA1, nodesDepth)
-    val eavA2 = Eav(Gid(2.toLong()), 2.toString(), 4)
+    val eavA2 = Eav(Gid(2.toLong()), Attr<Int>(2.toString()), 4)
     val nodeA2 = Leaf(Hash(ByteArray(1) { 3.toByte() }), nodeA1, testDbUuid, 11L, NodeData(Array(1) {eavA2}))
     nodesDepth[nodeA2.hash] = getNodeDepthByDepthMap(nodeA2, nodesDepth)
-    val eavB1 = Eav(Gid(2.toLong()), 2.toString(), 3)
+    val eavB1 = Eav(Gid(2.toLong()), Attr<Int>(2.toString()), 3)
     val nodeB1 = Leaf(Hash(ByteArray(1) { 4.toByte() }), root, testDbUuid, 12L, NodeData(Array(1) {eavB1}))
     nodesDepth[nodeB1.hash] = getNodeDepthByDepthMap(nodeB1, nodesDepth)
 

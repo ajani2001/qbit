@@ -96,6 +96,16 @@ inline fun <reified T : Any> Attr(id: Gid?, name: String, unique: Boolean = true
     )
 }
 
+inline fun <reified T : Any> Attr(name: String): Attr<T> {
+    return Attr(
+        null,
+        name,
+        types[T::class]?.code ?: throw QBitException("Unsupported type: ${T::class} for attribute: $name"),
+        false,
+        false
+    )
+}
+
 val types: Map<KClass<*>, DataType<*>> = mapOf(
     Boolean::class to QBoolean,
     Byte::class to QByte,

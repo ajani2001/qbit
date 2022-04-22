@@ -57,8 +57,8 @@ private class FakeSerializer<T> : KSerializer<T> {
 }
 
 fun Attr<*>.toFacts(): List<Eav> = listOf(
-    Eav(this.id!!, Attrs.name.name, this.name),
-    Eav(this.id, Attrs.type.name, this.type),
-    Eav(this.id, Attrs.unique.name, this.unique),
-    Eav(this.id, Attrs.list.name, this.list)
+    Eav(this.id!!, Attrs.name, this.name),
+    Eav(this.id, Attrs.type, this.type),
+    Eav(this.id, Attrs.unique, this.unique),
+    Eav(this.id, Attrs.list, this.list)
 )

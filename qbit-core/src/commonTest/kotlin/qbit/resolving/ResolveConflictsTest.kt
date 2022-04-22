@@ -73,8 +73,8 @@ class ResolveConflictsTest {
     fun `Test last writer wins resolving for nextEid attribute`(){
         runBlocking {
             val resolveConflictForNextEidAttr = lastWriterWinsResolve { Instances.nextEid }
-            val eav1 = Eav(Gid(1,8), Instances.nextEid.name, 10)
-            val eav2 = Eav(Gid(1,8), Instances.nextEid.name, 11)
+            val eav1 = Eav(Gid(1,8), Instances.nextEid, 10)
+            val eav2 = Eav(Gid(1,8), Instances.nextEid, 11)
             val result = resolveConflictForNextEidAttr(
                 listOf(PersistedEav(eav1, 11, nullHash)),
                 listOf(PersistedEav(eav2, 10, nullHash))

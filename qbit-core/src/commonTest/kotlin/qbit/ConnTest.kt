@@ -6,6 +6,7 @@ import qbit.api.Instances
 import qbit.api.gid.Gid
 import qbit.api.gid.Iid
 import qbit.api.model.Eav
+import qbit.api.model.QString
 import qbit.api.protoInstance
 import qbit.api.system.DbUuid
 import qbit.index.Indexer
@@ -49,7 +50,11 @@ class ConnTest {
             val root = Root(null, dbUuid, currentTimeMillis(), NodeData(trx.toTypedArray()))
             val storedRoot = nodesStorage.store(root)
             val leaf =
-                Leaf(null, storedRoot, dbUuid, currentTimeMillis(), NodeData(arrayOf(Eav(Gid(1, 10), "any", "any"))))
+                Leaf(null, storedRoot, dbUuid, currentTimeMillis(), NodeData(arrayOf(Eav(
+                    Gid(1, 10),
+                    qbit.api.model.Attr<Any>(Gid(1, 11), "any", QString.code, false, false),
+                    "any"
+                ))))
             val storedLeaf = nodesStorage.store(leaf)
             storage.overwrite(Namespace("refs")["head"], storedLeaf.hash.bytes)
 

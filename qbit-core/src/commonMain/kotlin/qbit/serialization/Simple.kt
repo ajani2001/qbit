@@ -7,6 +7,7 @@ import qbit.api.gid.Iid
 import qbit.api.model.*
 import qbit.api.system.DbUuid
 import qbit.platform.asInput
+import qbit.platform.assert
 
 object SimpleSerialization : Serialization {
 
@@ -40,8 +41,8 @@ object SimpleSerialization : Serialization {
         val factsCount = deserialize(ins, QLong) as Long
         val facts = (1..factsCount).asSequence().map {
             val eid = deserialize(ins, QGid) as Gid
-            val attr = deserialize(ins, QString) as String
-            val value = deserialize(ins)
+            val attr = deserializeAttr(ins)
+            val value = deserialize(ins) // TODO CHECK
             Eav(eid, attr, value)
         }
         val nodeData = NodeData(facts.toList().toTypedArray())
@@ -89,7 +90,7 @@ internal fun serialize(vararg anys: Any): ByteArray {
                 is Number -> byteArray(QLong.code, a)
                 is String -> byteArray(QString.code, byteArray(a))
                 is NodeData -> byteArray(serialize(a.trxes.size), *a.trxes.map { serialize(it) }.toTypedArray())
-                is Eav -> serialize(a.gid, a.attr, a.value)
+                is Eav -> serializeEav(a)
                 is Gid -> byteArray(QGid.code, serializeLong(a.value()))
                 is ByteArray -> byteArray(QBytes.code, serializeLong(a.size.toLong()), a)
                 else -> throw AssertionError("Should never happen, a is $a: ${a::class}")
@@ -97,6 +98,49 @@ internal fun serialize(vararg anys: Any): ByteArray {
         }
     }
     return byteArray(*bytes.toTypedArray())
+}
+
+internal fun serializeEav(eav: Eav): ByteArray {
+    val gid = eav.gid
+    val attr = eav.attr
+    val value = eav.value
+    val dataType = DataType.ofCode(attr.type)!!.let { if(it is QList<*>) it.itemsType else it }
+    return byteArray(serialize(gid), serializeAttr(attr), serializeMarked(dataType, value))
+}
+
+internal fun serializeAttr(attr: Attr<*>): ByteArray = serialize(attr.id!!, attr.name, attr.type, attr.unique, attr.list)
+
+internal fun serializeMarked(dataType: DataType<*>, value: Any): ByteArray {
+    return if (value as? Number != null) {
+        assert(dataType is QByte || dataType is QInt || dataType is QLong)
+        // see https://github.com/d-r-q/qbit/issues/114, https://github.com/d-r-q/qbit/issues/132
+        byteArray(QLong.code, serializeLong(value.toLong()))
+    } else {
+        when (value) {
+            is Boolean -> {
+                assert(dataType is QBoolean)
+                byteArray(QBoolean.code, if (value) 1.toByte() else 0.toByte())
+            }
+            // see https://github.com/d-r-q/qbit/issues/114, https://github.com/d-r-q/qbit/issues/132
+            is Number -> {
+                assert(dataType is QByte || dataType is QInt || dataType is QLong)
+                byteArray(QLong.code, value)
+            }
+            is String -> {
+                assert(dataType is QString)
+                byteArray(QString.code, byteArray(value))
+            }
+            is Gid -> {
+                assert(dataType is QGid || dataType is QRef)
+                byteArray(QGid.code, serializeLong(value.value()))
+            }
+            is ByteArray -> {
+                assert(dataType is QBytes)
+                byteArray(QBytes.code, serializeLong(value.size.toLong()), value)
+            }
+            else -> throw AssertionError("Should never happen, a is $value: ${value::class}")
+        }
+    }
 }
 
 @ExperimentalIoApi
@@ -160,6 +204,15 @@ internal fun <T : Any> deserialize(ins: Input, mark: DataType<T>): Any {
         DataType.ofCode(byte) == null -> throw DeserializationException("Unknown mark: ${byte.toChar()}")
     }
     return readMark(ins, mark)
+}
+
+internal fun deserializeAttr(ins: Input): Attr<*> {
+    val id = readMark(ins, QGid) as Gid
+    val name = readMark(ins, QString) as String
+    val type = (readMark(ins, QByte) as Long).toByte()
+    val unique = readMark(ins, QBoolean) as Boolean
+    val list = readMark(ins, QBoolean) as Boolean
+    return Attr<Any>(id, name, type, unique, list)
 }
 
 @ExperimentalIoApi

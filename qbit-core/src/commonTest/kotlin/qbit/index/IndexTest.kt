@@ -28,9 +28,9 @@ class IndexTest {
 
     @Test
     fun testVaet() {
-        val f1 = Eav(Gid(1, 0), "attr1", "value1")
-        val f2 = Eav(Gid(2, 0), "attr2", "value2")
-        val f3 = Eav(Gid(3, 0), "attr3", "value3")
+        val f1 = Eav(Gid(1, 0), Attr<String>("attr1"), "value1")
+        val f2 = Eav(Gid(2, 0), Attr<String>("attr2"), "value2")
+        val f3 = Eav(Gid(3, 0), Attr<String>("attr3"), "value3")
 
         assertEquals(0, attrValuePattern("attr2", "value2").invoke(f2))
         assertFalse(attrValuePattern("attr2", "value2").invoke(f1) == 0)
@@ -105,9 +105,9 @@ class IndexTest {
             val time1 = currentTimeMillis()
             val eid = Gid(0, 0)
 
-            val _attr1 = "/attr1"
-            val _attr2 = "/attr2"
-            val _attr3 = "/attr3"
+            val _attr1 = Attr<String>("/attr1")
+            val _attr2 = Attr<String>("/attr1")
+            val _attr3 = Attr<String>("/attr1")
 
             val n1 = Root(null, dbUuid, time1, NodeData(arrayOf(Eav(eid, _attr1, 0))))
             val n2 = Leaf(
@@ -215,11 +215,11 @@ class IndexTest {
         val deletedEntityGid = Gid(0, 0)
         val idx = Index(
             listOf(
-                deletedEntityGid to listOf(Eav(deletedEntityGid, "any", "any")),
-                Gid(0, 1) to listOf(Eav(Gid(0, 1), "to-keep", "any"))
+                deletedEntityGid to listOf(Eav(deletedEntityGid, Attr<String>("any"), "any")),
+                Gid(0, 1) to listOf(Eav(Gid(0, 1), Attr<String>("to-keep"), "any"))
             )
         )
-        val filtered = idx.addFacts(listOf(Eav(deletedEntityGid, qbit.api.tombstone.name, true)))
+        val filtered = idx.addFacts(listOf(Eav(deletedEntityGid, qbit.api.tombstone, true)))
         assertEquals(1, filtered.entities.size)
         assertEquals(1, filtered.aveIndex.size)
         assertNotNull(filtered.eidsByPred(AttrValuePred("to-keep", "any")).firstOrNull(), "Cannot find entity by to-keep=any")
@@ -231,19 +231,22 @@ class IndexTest {
         // Given an index with two entities with interleaving eavs
         val deletedGid = Gid(0, 0)
         val anotherGid = Gid(0, 1)
+        val attr1 = Attr<String>("attr1")
+        val attr2 = Attr<String>("attr2")
+        val attr3 = Attr<String>("attr3")
         val deletedEavs = listOf(
-            Eav(deletedGid, "attr3", "c"),
-            Eav(deletedGid, "attr2", "b"),
-            Eav(deletedGid, "attr1", "a")
+            Eav(deletedGid, attr3, "c"),
+            Eav(deletedGid, attr2, "b"),
+            Eav(deletedGid, attr1, "a")
         )
         val anotherEavs = listOf(
-            Eav(anotherGid, "attr1", "b"),
-            Eav(anotherGid, "attr2", "a")
+            Eav(anotherGid, attr1, "b"),
+            Eav(anotherGid, attr2, "a")
         )
         val index = Index(listOf(deletedGid to deletedEavs, anotherGid to anotherEavs))
 
         // When to the index add tombstone for deleted entity
-        val filtered = index.addFacts((listOf(Eav(deletedGid, qbit.api.tombstone.name, true))))
+        val filtered = index.addFacts((listOf(Eav(deletedGid, qbit.api.tombstone, true))))
 
         // Then should contain only another entity and it's eavs
         assertEquals(1, filtered.entities.size)
@@ -263,6 +266,6 @@ class IndexTest {
         }
     }
 
-    private fun <T : Any> f(eid: Int, attr: Attr<T>, value: T) = Eav(Gid(0, eid), attr.name, value)
+    private fun <T : Any> f(eid: Int, attr: Attr<T>, value: T) = Eav(Gid(0, eid), attr, value)
 
 }
