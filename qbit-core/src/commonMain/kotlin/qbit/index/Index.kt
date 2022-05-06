@@ -106,9 +106,12 @@ class Index(
                 if(obsoleteEntity != null) {
                     effectiveEavs.addAll(obsoleteEntity.second.filter { eav ->
                         val attr = resolveAttr(eav.attr)
-                        attr != null &&
-                                DataType.ofCode(attr.type)!!.let { it.isCounter() || it.isRegister() } &&
-                                eavs.none { it.attr == eav.attr }
+                        if(attr != null) {
+                            val dataType = DataType.ofCode(attr.type)!!
+                            dataType.isSet() || (dataType.isCounter() || dataType.isRegister()) && eavs.none { it.attr == eav.attr }
+                        } else {
+                            false
+                        }
                     })
                 }
 

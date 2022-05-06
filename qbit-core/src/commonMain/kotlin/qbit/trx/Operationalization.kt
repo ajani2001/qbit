@@ -13,6 +13,7 @@ fun operationalize(db: InternalDb, facts: List<Eav>): List<Eav> {
         when {
             dataType.isCounter() -> operationalizeCounter(db, it, attr)
             dataType.isRegister() -> operationalizeRegister(db, it, attr)
+            dataType.isSet() -> operationalizeSet(db, it, attr)
             else -> it
         }
     }
@@ -37,6 +38,11 @@ private fun operationalizeCounter(db: InternalDb, fact: Eav, attr: Attr<*>): Eav
 private fun operationalizeRegister(db: InternalDb, fact: Eav, attr: Attr<*>): Eav? {
     val previous = db.pullEntity(fact.gid)?.tryGet(attr)
     return if (fact.value != previous) fact else null
+}
+
+private fun operationalizeSet(db: InternalDb, fact: Eav, attr: Attr<*>): Eav? {
+    val previous = db.pullEntity(fact.gid)?.tryGet(attr)
+    return if (previous == null || !(previous as List<*>).contains(fact.value)) fact else null
 }
 
 fun deoperationalize(db: InternalDb, facts: List<Eav>): List<Eav> {

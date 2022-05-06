@@ -52,9 +52,9 @@ class IndexDb(
         val attrValues = rawEntity.entries.map {
             val attr = schema[it.key]
             require(attr != null) { "There is no attribute with name ${it.key}" }
-            require(attr.list || it.value.size == 1) { "Corrupted ${attr.name} of $gid - it is scalar, but multiple values has been found: ${it.value}" }
+            require(attr.list || DataType.ofCode(attr.type)!!.isSet() || it.value.size == 1) { "Corrupted ${attr.name} of $gid - it is scalar, but multiple values has been found: ${it.value}" }
             val value =
-                if (attr.list) it.value.map { e -> fixNumberType(attr, e) }
+                if (attr.list || DataType.ofCode(attr.type)!!.isSet()) it.value.map { e -> fixNumberType(attr, e) }
                 else fixNumberType(attr, it.value[0])
             attr to value
         }
@@ -66,8 +66,8 @@ class IndexDb(
     // see https://github.com/d-r-q/qbit/issues/114, https://github.com/d-r-q/qbit/issues/132
     private fun fixNumberType(attr: Attr<Any>, value: Any) =
         when (attr.type) {
-            QByte.code, QByte.counter().code -> (value as Number).toByte()
-            QInt.code, QInt.counter().code -> (value as Number).toInt()
+            QByte.code, QByte.counter().code, QByte.set().code -> (value as Number).toByte()
+            QInt.code, QInt.counter().code, QInt.set().code -> (value as Number).toInt()
             else -> value
         }
 

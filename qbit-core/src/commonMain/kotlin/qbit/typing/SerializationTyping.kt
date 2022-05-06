@@ -78,7 +78,7 @@ class EntityDecoder(
             ?: throw QBitException("Corrupted entity $entity, there is no attr $attrName in schema")
         val dataType = DataType.ofCode(attr.type)!!
 
-        if(dataType.isList()) {
+        if(dataType.isList() || dataType.isSet()) {
             val elements = entity.tryGet(attr) ?: return null // TODO CHECK NULLABILITY
             val decoder = ListDecoder(schema, entity, elements as List<Any>, serializersModule, cache, registerFolders)
             return deserializer.deserialize(decoder)

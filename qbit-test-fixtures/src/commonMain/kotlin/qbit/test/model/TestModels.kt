@@ -19,6 +19,12 @@ data class StringRegisterEntity(val id: Long?, val register: String)
 data class CountryRegisterEntity(val id: Long?, val register: Country)
 
 @Serializable
+data class IntSetEntity(val id: Long?, val set: Set<Int>)
+
+@Serializable
+data class CountrySetEntity(val id: Long?, val set: Set<Country>)
+
+@Serializable
 data class NullableIntEntity(val id: Long?, val int: Int?)
 
 @Serializable
@@ -319,6 +325,8 @@ val testsSerialModule = SerializersModule {
     contextual(IntCounterEntity::class, IntCounterEntity.serializer())
     contextual(StringRegisterEntity::class, StringRegisterEntity.serializer())
     contextual(CountryRegisterEntity::class, CountryRegisterEntity.serializer())
+    contextual(IntSetEntity::class, IntSetEntity.serializer())
+    contextual(CountrySetEntity::class, CountrySetEntity.serializer())
     contextual(Region::class, Region.serializer())
     contextual(ParentToChildrenTreeEntity::class, ParentToChildrenTreeEntity.serializer())
     contextual(EntityWithRefsToSameType::class, EntityWithRefsToSameType.serializer())

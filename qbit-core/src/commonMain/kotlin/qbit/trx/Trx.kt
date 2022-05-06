@@ -96,10 +96,10 @@ fun Entity.toFacts(): Collection<Eav> =
         val type = DataType.ofCode(attr.type)!!
         @Suppress("UNCHECKED_CAST")
         when {
-            type.isRegister() || type.value() && !attr.list -> listOf(valToFacts(gid, attr, value))
-            type.value() && attr.list -> listToFacts(gid, attr, value as List<Any>)
-            type.ref() && !attr.list -> listOf(refToFacts(gid, attr, value))
-            type.ref() && attr.list -> refListToFacts(gid, attr, value as List<Any>)
+            type.isRegister() || type.value() && !(attr.list || DataType.ofCode(attr.type)!!.isSet()) -> listOf(valToFacts(gid, attr, value))
+            type.value() && (attr.list || DataType.ofCode(attr.type)!!.isSet()) -> listToFacts(gid, attr, value as List<Any>)
+            type.ref() && !(attr.list || DataType.ofCode(attr.type)!!.isSet()) -> listOf(refToFacts(gid, attr, value))
+            type.ref() && (attr.list || DataType.ofCode(attr.type)!!.isSet()) -> refListToFacts(gid, attr, value as List<Any>)
             else -> throw AssertionError("Unexpected attr kind: $attr")
         }
     }

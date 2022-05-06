@@ -99,6 +99,12 @@ internal class EntityEncoder(
             ValueKind.REF_LIST -> {
                 serializeRefList(value as Iterable<Any>)
             }
+            ValueKind.VALUE_SET -> {
+                (value as Set<Any>).toList()
+            }
+            ValueKind.REF_SET -> {
+                serializeRefList(value as Set<Any>)
+            }
         }
 
         val fieldPointer = Pointer(
@@ -185,7 +191,7 @@ internal class EntityEncoder(
 
 enum class ValueKind {
 
-    SCALAR_VALUE, SCALAR_REF, VALUE_LIST, REF_LIST;
+    SCALAR_VALUE, SCALAR_REF, VALUE_LIST, REF_LIST, VALUE_SET, REF_SET;
 
     companion object {
         fun of(descriptor: SerialDescriptor, index: Int, value: Any): ValueKind {
@@ -209,6 +215,18 @@ enum class ValueKind {
                 ) -> {
                     REF_LIST
                 }
+                isValueSet(
+                    elementDescriptor,
+                    value
+                ) -> {
+                    VALUE_SET
+                }
+                isRefSet(
+                    elementDescriptor,
+                    value
+                ) -> {
+                    REF_SET
+                }
                 else -> {
                     throw AssertionError("Writing primitive via encodeSerializableElement")
                 }
@@ -231,6 +249,13 @@ enum class ValueKind {
         private fun isRefList(elementDescriptor: SerialDescriptor, value: Any) =
             elementDescriptor.kind == StructureKind.LIST && value is List<*>
 
+        private fun isValueSet(elementDescriptor: SerialDescriptor, value: Any) =
+            value is Set<*> &&
+                    (elementDescriptor.getElementDescriptor(0).kind is PrimitiveKind ||
+                            elementDescriptor.getElementDescriptor(0).kind == StructureKind.LIST) // ByteArray
+
+        private fun isRefSet(elementDescriptor: SerialDescriptor, value: Any) =
+            value is Set<*> && elementDescriptor.getElementDescriptor(0).kind is StructureKind.CLASS
     }
 
 }

@@ -51,6 +51,8 @@ val testSchema = schema(internalTestsSerialModule) {
             )
         }
     }
+    entity(IntSetEntity::class)
+    entity(CountrySetEntity::class)
     entity(ResearchGroup::class)
     entity(EntityWithByteArray::class)
     entity(EntityWithListOfBytes::class)
